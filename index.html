@@ -77,6 +77,28 @@
             grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
             gap: 15px;
             margin-bottom: 20px;
+            max-height: 60vh;
+            overflow-y: auto;
+            padding-right: 5px;
+        }
+
+        /* Custom scrollbar styling */
+        .player-grid::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .player-grid::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+        }
+
+        .player-grid::-webkit-scrollbar-thumb {
+            background: rgba(255, 214, 10, 0.5);
+            border-radius: 4px;
+        }
+
+        .player-grid::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 214, 10, 0.7);
         }
 
         .player-card {
@@ -402,17 +424,193 @@
             display: none;
         }
 
+        /* Mobile Responsive Styles */
         @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+
             h1 {
                 font-size: 2.5rem;
+                letter-spacing: 2px;
             }
-            
+
+            .subtitle {
+                font-size: 0.9rem;
+            }
+
+            .section {
+                padding: 20px 15px;
+                margin-bottom: 20px;
+            }
+
+            .section-title {
+                font-size: 1.5rem;
+                margin-bottom: 15px;
+            }
+
+            /* Player grid - 2 columns on mobile with fixed column width */
+            .player-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 8px;
+                max-height: 50vh;
+            }
+
+            .player-card {
+                padding: 12px;
+            }
+
+            .player-card input[type="checkbox"] {
+                width: 18px;
+                height: 18px;
+                top: 10px;
+                right: 10px;
+            }
+
+            .player-name {
+                font-size: 0.9rem;
+                margin-bottom: 6px;
+                padding-right: 25px;
+            }
+
+            .position-badge {
+                font-size: 0.65rem;
+                padding: 3px 8px;
+            }
+
+            /* Controls - stack vertically */
+            .controls {
+                gap: 10px;
+            }
+
+            .format-selector {
+                width: 100%;
+                justify-content: space-between;
+                padding: 10px 15px;
+            }
+
+            .format-selector label {
+                font-size: 0.9rem;
+            }
+
+            .format-selector select {
+                font-size: 0.9rem;
+                padding: 6px 10px;
+            }
+
+            button {
+                width: 100%;
+                padding: 12px 20px;
+                font-size: 0.95rem;
+            }
+
+            .selected-count {
+                width: 100%;
+                text-align: center;
+                padding: 10px 15px;
+            }
+
+            /* Teams section - stack vertically on mobile */
             .pitch-container {
                 grid-template-columns: 1fr;
+                gap: 20px;
             }
-            
+
+            .team-section {
+                padding: 15px;
+            }
+
+            .team-name {
+                font-size: 1.5rem;
+                letter-spacing: 1px;
+            }
+
+            .team-stats {
+                font-size: 0.8rem;
+            }
+
+            /* Smaller pitch elements on mobile */
+            .pitch::after {
+                width: 50px;
+                height: 50px;
+            }
+
+            .players-on-pitch {
+                padding: 15px 5px;
+            }
+
+            .pitch-player {
+                margin-bottom: 0;
+            }
+
+            .player-circle {
+                width: 35px;
+                height: 35px;
+                font-size: 0.6rem;
+                border-width: 1.5px;
+            }
+
+            .player-label {
+                font-size: 0.65rem;
+                padding: 2px 6px;
+                max-width: 70px;
+            }
+
+            /* Adjust team action buttons */
+            #teamsSection .section-title {
+                margin-bottom: 10px;
+            }
+
+            #teamsSection > div[style*="text-align"] {
+                flex-direction: column !important;
+                gap: 8px !important;
+            }
+
+            #teamsSection button {
+                width: 100%;
+                font-size: 0.9rem;
+                padding: 10px 16px;
+            }
+        }
+
+        /* Very small phones - keep 2 columns but adjust sizing */
+        @media (max-width: 400px) {
+            h1 {
+                font-size: 2rem;
+            }
+
             .player-grid {
-                grid-template-columns: 1fr;
+                gap: 6px;
+                max-height: 45vh;
+            }
+
+            .player-card {
+                padding: 10px;
+            }
+
+            .player-name {
+                font-size: 0.85rem;
+            }
+
+            .position-badge {
+                font-size: 0.6rem;
+                padding: 2px 6px;
+            }
+
+            .player-circle {
+                width: 30px;
+                height: 30px;
+                font-size: 0.55rem;
+            }
+
+            .player-label {
+                font-size: 0.6rem;
+                padding: 2px 5px;
+                max-width: 60px;
+            }
+
+            .team-name {
+                font-size: 1.3rem;
             }
         }
 
@@ -531,11 +729,11 @@
                 const response = await fetch('players-public.json');
                 const data = await response.json();
                 
-                // Merge ratings into player data
+                // Merge ratings into player data and sort alphabetically
                 allPlayers = data.players.map(player => ({
                     ...player,
                     attributes: PLAYER_RATINGS[player.id.toString()] || {}
-                }));
+                })).sort((a, b) => a.name.localeCompare(b.name));
                 
                 renderPlayers();
             } catch (error) {
