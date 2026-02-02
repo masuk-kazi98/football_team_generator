@@ -403,15 +403,71 @@
         }
 
         @media (max-width: 768px) {
+
+            body {
+                padding: 10px;
+            }
+
             h1 {
-                font-size: 2.5rem;
+                font-size: 2.2rem;
             }
-            
-            .pitch-container {
-                grid-template-columns: 1fr;
+
+            .section {
+                padding: 15px;
+                margin-bottom: 15px;
             }
-            
+
+            /* Dense player list */
             .player-grid {
+                grid-template-columns: 1fr 1fr;
+                gap: 8px;
+                max-height: 55vh;
+                overflow-y: auto;
+            }
+
+            .player-card {
+                padding: 10px;
+            }
+
+            .player-name {
+                font-size: 0.95rem;
+            }
+
+            .position-badge {
+                font-size: 0.65rem;
+                padding: 3px 6px;
+            }
+
+            /* Stack controls */
+            .controls {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .controls button,
+            .format-selector,
+            .selected-count {
+                width: 100%;
+                text-align: center;
+            }
+
+            /* Pitch readability */
+            .pitch {
+                aspect-ratio: 0.85;
+            }
+
+            .player-circle {
+                width: 38px;
+                height: 38px;
+                font-size: 0.6rem;
+            }
+
+            .player-label {
+                font-size: 0.65rem;
+                max-width: 70px;
+            }
+
+            .pitch-container {
                 grid-template-columns: 1fr;
             }
         }
