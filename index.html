@@ -415,6 +415,17 @@
                 grid-template-columns: 1fr;
             }
         }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
     </style>
 </head>
 <body>
@@ -459,7 +470,8 @@
         let maxPlayers = 16;
 
         // Encrypted player ratings (obfuscated for privacy)
-        const ENCRYPTED_RATINGS = "MTo5Miw4NSw5MCw5NSw4NSw4NSwzMHwyOjg3LDgwLDgwLDcwLDcwLDYwLDM1fDM6ODQsNjAsNzAsNzAsNjAsNjAsMjV8NDo3MCw4Nyw4MCw3NSw1MCw4MCw1MHw1OjcwLDY1LDYwLDcwLDkwLDg4LDYwfDY6NjUsNjUsNjAsNzAsMzAsNzAsNDB8Nzo3MCw5MCw4MCw3OCw0MCw4MCwyOHw4Ojk2LDkwLDkwLDg1LDYwLDYwLDM4fDk6ODIsODAsODAsNjgsNTAsODIsMjV8MTA6ODAsODQsODIsOTAsNzAsNzUsMzB8MTE6NDAsNDAsNDAsNTAsNzAsODUsMzV8MTI6NzUsNjUsNzAsNjUsODAsODUsMjJ8MTM6MzAsMzAsMzAsNzUsMzAsMzAsNzV8MTQ6NTAsNTAsNjAsNjAsNjAsODUsNTB8MTU6NTIsNTUsNjUsNTAsMzAsODcsMjh8MTY6NzAsNjUsNzAsNzAsNzAsNzAsMTh8MTc6ODgsODQsODUsODAsNDAsNjAsMTh8MTg6ODIsODAsODIsNzUsMzAsMzAsMTh8MTk6ODAsNzUsODIsNzAsNDAsNzAsMTh8MjA6NzAsNjAsNjUsNzAsNjAsNjUsMTh8MjE6ODAsODUsODUsODAsODAsODAsMTh8MjI6NzUsNzAsNzUsNjAsNzAsODAsMTh8MjM6ODAsNjgsODAsNjAsNDAsNTAsMTh8MjQ6ODIsNzUsODIsNjAsNTAsNzAsMTh8MjU6NTUsNTUsNjAsNjUsODIsODIsMTh8MjY6ODcsODYsOTIsODgsNTUsNjAsMTg=";
+        const ENCRYPTED_RATINGS = "MTo4NSw3OCw4Miw3MCw0NSw2NSwzMHwyOjYyLDQ4LDU1LDcyLDg4LDg1LDM1fDM6NzUsNjgsNzYsODIsNjIsNzAsMjV8NDo1NSw0MCw0NSw2MCw1MCw3NSw4NXw1OjkwLDgwLDg1LDY1LDM4LDYwLDIwfDY6NzAsNTUsNjAsNzUsODAsNzgsNDB8Nzo3OCw3NSw4MCw3OCw1MCw2OCwyOHw4OjY4LDQ1LDUwLDY4LDg1LDgyLDM4fDk6ODIsODUsNzgsNjgsNDIsNjUsMjV8MTA6NzIsNjUsNzAsODAsNjgsNzIsMzB8MTE6NjUsNTIsNTgsNzAsODIsODAsMzV8MTI6ODAsNzIsNzUsNzIsNDgsNjIsMjJ8MTM6NjAsNDIsNDgsNjUsODgsODUsNDJ8MTQ6NTgsMzgsNDIsNjIsNjUsNzgsODJ8MTU6NzQsNzAsNzIsNzgsNjAsNzAsMjh8MTY6ODgsODIsODAsNjIsNDAsNTgsMTg=";
+
         // Simple decryption function
         function decryptRatings(encrypted) {
             try {
@@ -654,10 +666,7 @@
 
             // Separate GKs from outfield players
             const goalkeepers = playersWithRatings.filter(p => p.position === 'GK');
-            const outfield = playersWithRatings.filter(p => p.position !== 'GK');
-
-            // Sort outfield players by rating
-            outfield.sort((a, b) => b.rating - a.rating);
+            let outfield = playersWithRatings.filter(p => p.position !== 'GK');
 
             // Initialize teams
             let team1 = [];
@@ -672,12 +681,40 @@
                 // Add remaining GKs as outfield
                 for (let i = 2; i < goalkeepers.length; i++) {
                     outfield.push(goalkeepers[i]);
-                    outfield.sort((a, b) => b.rating - a.rating);
                 }
             } else if (goalkeepers.length === 1) {
                 // Only one GK - give to team1
                 team1.push(goalkeepers[0]);
             }
+
+            // Add randomness by shuffling players of similar ratings
+            // Group players into rating tiers (every 5 points)
+            const shuffleWithinTiers = (players) => {
+                const tiers = {};
+                players.forEach(p => {
+                    const tier = Math.floor(p.rating / 5) * 5;
+                    if (!tiers[tier]) tiers[tier] = [];
+                    tiers[tier].push(p);
+                });
+                
+                // Shuffle within each tier using Fisher-Yates algorithm
+                Object.keys(tiers).forEach(tier => {
+                    const arr = tiers[tier];
+                    for (let i = arr.length - 1; i > 0; i--) {
+                        const j = Math.floor(Math.random() * (i + 1));
+                        [arr[i], arr[j]] = [arr[j], arr[i]];
+                    }
+                    tiers[tier] = arr;
+                });
+                
+                // Flatten back to array, sorted by tier
+                return Object.keys(tiers)
+                    .sort((a, b) => b - a)
+                    .flatMap(tier => tiers[tier]);
+            };
+
+            // Shuffle outfield players within rating tiers for variety
+            const shuffledOutfield = shuffleWithinTiers(outfield);
 
             // Calculate how many players each team should have
             const playersPerTeam = maxPlayers / 2;
@@ -686,7 +723,7 @@
             let team1Rating = team1.reduce((sum, p) => sum + p.rating, 0);
             let team2Rating = team2.reduce((sum, p) => sum + p.rating, 0);
 
-            for (const player of outfield) {
+            for (const player of shuffledOutfield) {
                 // If a team is full, add to the other team
                 if (team1.length >= playersPerTeam) {
                     team2.push(player);
@@ -876,6 +913,9 @@
                 </div>
             `;
 
+            // Add a subtle flash effect to show regeneration
+            section.style.animation = 'fadeIn 0.5s ease-in';
+            
             const pitchEl = section.querySelector('.players-on-pitch');
 
             // Position players on pitch

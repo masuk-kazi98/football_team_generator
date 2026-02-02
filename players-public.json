@@ -2,12 +2,12 @@
   "players": [
     {
       "id": 1,
-      "name": "Masuk Kazi",
+      "name": "Masuk",
       "positions": ["ATT", "MID", "DEF"]
     },
     {
       "id": 2,
-      "name": "Fuzayl Fudge",
+      "name": "Fuzayl",
       "positions": ["DEF", "ATT"]
     },
     {
@@ -17,7 +17,7 @@
     },
     {
       "id": 4,
-      "name": "Zaid Ahmed",
+      "name": "Zaid",
       "positions": ["ATT"]
     },
     {
