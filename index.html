@@ -1069,10 +1069,10 @@
             const team2Avg = Math.round(team2.reduce((sum, p) => sum + p.rating, 0) / team2.length);
 
             // Render Team 1 (Black)
-            container.appendChild(createTeamPitch(team1, 'Black Shirts', team1Avg, false));
+            container.appendChild(createTeamPitch(team1, 'Non Bibs', team1Avg, false));
             
             // Render Team 2 (Yellow bibs)
-            container.appendChild(createTeamPitch(team2, 'Yellow Bibs', team2Avg, true));
+            container.appendChild(createTeamPitch(team2, 'Bibs', team2Avg, true));
 
             document.getElementById('teamsSection').classList.remove('hidden');
             document.getElementById('teamsSection').scrollIntoView({ behavior: 'smooth' });
