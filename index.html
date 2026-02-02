@@ -527,7 +527,12 @@
                     ...player,
                     attributes: PLAYER_RATINGS[player.id.toString()] || {}
                 }));
-                
+
+                // 🔽 ADD THIS: alphabetical sort by name
+                allPlayers.sort((a, b) =>
+                    a.name.localeCompare(b.name, undefined, { sensitivity: 'base' })
+                );
+
                 renderPlayers();
             } catch (error) {
                 showError('Failed to load players-public.json. Make sure the file is in the same folder as this HTML file.');
