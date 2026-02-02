@@ -1,0 +1,949 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Team Generator</title>
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --grass-dark: #1a4d2e;
+            --grass-mid: #2d6a4f;
+            --grass-light: #40916c;
+            --white: #ffffff;
+            --black: #000000;
+            --yellow: #ffd60a;
+            --line: rgba(255, 255, 255, 0.4);
+            --shadow: rgba(0, 0, 0, 0.3);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, var(--grass-dark) 0%, var(--grass-mid) 50%, var(--grass-light) 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: var(--white);
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        h1 {
+            font-family: 'Bebas Neue', cursive;
+            font-size: 4rem;
+            letter-spacing: 4px;
+            text-shadow: 3px 3px 0 var(--shadow);
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            font-size: 1.1rem;
+            opacity: 0.9;
+            font-weight: 300;
+        }
+
+        .section {
+            background: rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 8px 32px var(--shadow);
+        }
+
+        .section-title {
+            font-family: 'Bebas Neue', cursive;
+            font-size: 2rem;
+            letter-spacing: 2px;
+            margin-bottom: 20px;
+            color: var(--yellow);
+        }
+
+        .player-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .player-card {
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid transparent;
+            border-radius: 12px;
+            padding: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .player-card:hover {
+            background: rgba(255, 255, 255, 0.15);
+            transform: translateY(-2px);
+        }
+
+        .player-card.selected {
+            background: rgba(255, 214, 10, 0.2);
+            border-color: var(--yellow);
+        }
+
+        .player-card input[type="checkbox"] {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+        }
+
+        .player-name {
+            font-weight: 600;
+            font-size: 1.1rem;
+            margin-bottom: 8px;
+            padding-right: 30px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .player-rating {
+            font-family: 'Bebas Neue', cursive;
+            font-size: 1.3rem;
+            color: var(--yellow);
+            font-weight: bold;
+        }
+
+        .player-positions {
+            display: flex;
+            gap: 6px;
+            margin-bottom: 10px;
+            flex-wrap: wrap;
+        }
+
+        .position-badge {
+            background: var(--grass-dark);
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            letter-spacing: 1px;
+        }
+
+        .player-stats {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 6px;
+            font-size: 0.85rem;
+        }
+
+        .stat {
+            display: flex;
+            justify-content: space-between;
+            padding: 4px 0;
+        }
+
+        .stat-name {
+            opacity: 0.8;
+        }
+
+        .stat-value {
+            font-weight: 600;
+            color: var(--yellow);
+        }
+
+        .controls {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .format-selector {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            padding: 10px 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+        }
+
+        .format-selector label {
+            font-weight: 500;
+            margin-right: 5px;
+        }
+
+        .format-selector select {
+            background: rgba(0, 0, 0, 0.3);
+            color: var(--white);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: 'Bebas Neue', cursive;
+            letter-spacing: 1px;
+        }
+
+        .format-selector select:focus {
+            outline: none;
+            border-color: var(--yellow);
+        }
+
+        button {
+            background: var(--yellow);
+            color: var(--black);
+            border: none;
+            padding: 14px 28px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: 'Bebas Neue', cursive;
+            letter-spacing: 1px;
+            box-shadow: 0 4px 12px rgba(255, 214, 10, 0.3);
+        }
+
+        button:hover {
+            background: #ffed4e;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(255, 214, 10, 0.4);
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .selected-count {
+            padding: 10px 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            font-weight: 500;
+        }
+
+        .pitch-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-top: 30px;
+        }
+
+        .team-section {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 12px;
+            padding: 20px;
+        }
+
+        .team-header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .team-name {
+            font-family: 'Bebas Neue', cursive;
+            font-size: 2rem;
+            letter-spacing: 2px;
+            margin-bottom: 8px;
+        }
+
+        .team-stats {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+
+        .pitch {
+            background: linear-gradient(to bottom, 
+                var(--grass-mid) 0%, 
+                var(--grass-light) 50%, 
+                var(--grass-mid) 100%);
+            border: 3px solid var(--white);
+            border-radius: 8px;
+            position: relative;
+            aspect-ratio: 0.7;
+            overflow: hidden;
+        }
+
+        /* Pitch markings */
+        .pitch::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: var(--line);
+        }
+
+        .pitch::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 80px;
+            height: 80px;
+            border: 2px solid var(--line);
+            border-radius: 50%;
+        }
+
+        .penalty-box {
+            position: absolute;
+            left: 10%;
+            right: 10%;
+            height: 20%;
+            border: 2px solid var(--line);
+        }
+
+        .penalty-box.top {
+            top: 0;
+            border-top: none;
+        }
+
+        .penalty-box.bottom {
+            bottom: 0;
+            border-bottom: none;
+        }
+
+        .goal-box {
+            position: absolute;
+            left: 30%;
+            right: 30%;
+            height: 8%;
+            border: 2px solid var(--line);
+        }
+
+        .goal-box.top {
+            top: 0;
+            border-top: none;
+        }
+
+        .goal-box.bottom {
+            bottom: 0;
+            border-bottom: none;
+        }
+
+        .players-on-pitch {
+            position: relative;
+            height: 100%;
+            padding: 20px 10px;
+        }
+
+        .pitch-player {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            text-align: center;
+            z-index: 10;
+        }
+
+        .player-circle {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--black);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 0.7rem;
+            margin: 0 auto 5px;
+            box-shadow: 0 3px 10px var(--shadow);
+            border: 2px solid var(--white);
+            position: relative;
+        }
+
+        .team-yellow .player-circle {
+            background: var(--yellow);
+            color: var(--black);
+        }
+
+        .player-label {
+            font-size: 0.75rem;
+            font-weight: 600;
+            background: rgba(0, 0, 0, 0.6);
+            padding: 3px 8px;
+            border-radius: 4px;
+            white-space: nowrap;
+            max-width: 100px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .team-yellow .player-label {
+            background: rgba(255, 214, 10, 0.3);
+        }
+
+        #errorMessage {
+            background: rgba(220, 53, 69, 0.2);
+            border: 2px solid #dc3545;
+            color: #fff;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2.5rem;
+            }
+            
+            .pitch-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .player-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>⚽ Team Generator</h1>
+            <p class="subtitle">Select players and generate balanced teams</p>
+        </header>
+
+        <div id="errorMessage"></div>
+
+        <div class="section">
+            <div class="section-title">Select Players</div>
+            <div id="playerGrid" class="player-grid"></div>
+            <div class="controls">
+                <div class="format-selector">
+                    <label for="gameFormat">Game Format:</label>
+                    <select id="gameFormat" onchange="updateMaxPlayers()">
+                        <option value="14">7-a-side (14 total)</option>
+                        <option value="16" selected>8-a-side (16 total)</option>
+                        <option value="18">9-a-side (18 total)</option>
+                    </select>
+                </div>
+                <button onclick="selectAll()">Select All</button>
+                <button onclick="clearSelection()">Clear All</button>
+                <button onclick="generateTeams()" id="generateBtn">Generate Teams</button>
+                <div class="selected-count">
+                    Selected: <strong><span id="selectedCount">0</span>/<span id="maxPlayers">16</span></strong>
+                </div>
+            </div>
+        </div>
+
+        <div id="teamsSection" class="section hidden">
+            <div class="section-title">Generated Teams</div>
+            <div class="pitch-container" id="pitchContainer"></div>
+        </div>
+    </div>
+
+    <script>
+        let allPlayers = [];
+        let selectedPlayers = new Set();
+        let maxPlayers = 16;
+
+        // Encrypted player ratings (obfuscated for privacy)
+        const ENCRYPTED_RATINGS = "MTo5Miw4NSw5MCw5NSw4NSw4NSwzMHwyOjg3LDgwLDgwLDcwLDcwLDYwLDM1fDM6ODQsNjAsNzAsNzAsNjAsNjAsMjV8NDo3MCw4Nyw4MCw3NSw1MCw4MCw1MHw1OjcwLDY1LDYwLDcwLDkwLDg4LDYwfDY6NjUsNjUsNjAsNzAsMzAsNzAsNDB8Nzo3MCw5MCw4MCw3OCw0MCw4MCwyOHw4Ojk2LDkwLDkwLDg1LDYwLDYwLDM4fDk6ODIsODAsODAsNjgsNTAsODIsMjV8MTA6ODAsODQsODIsOTAsNzAsNzUsMzB8MTE6NDAsNDAsNDAsNTAsNzAsODUsMzV8MTI6NzUsNjUsNzAsNjUsODAsODUsMjJ8MTM6MzAsMzAsMzAsNzUsMzAsMzAsNzV8MTQ6NTAsNTAsNjAsNjAsNjAsODUsNTB8MTU6NTIsNTUsNjUsNTAsMzAsODcsMjh8MTY6NzAsNjUsNzAsNzAsNzAsNzAsMTh8MTc6ODgsODQsODUsODAsNDAsNjAsMTh8MTg6ODIsODAsODIsNzUsMzAsMzAsMTh8MTk6ODAsNzUsODIsNzAsNDAsNzAsMTh8MjA6NzAsNjAsNjUsNzAsNjAsNjUsMTh8MjE6ODAsODUsODUsODAsODAsODAsMTh8MjI6NzUsNzAsNzUsNjAsNzAsODAsMTh8MjM6ODAsNjgsODAsNjAsNDAsNTAsMTh8MjQ6ODIsNzUsODIsNjAsNTAsNzAsMTh8MjU6NTUsNTUsNjAsNjUsODIsODIsMTh8MjY6ODcsODYsOTIsODgsNTUsNjAsMTg=";
+        // Simple decryption function
+        function decryptRatings(encrypted) {
+            try {
+                // Base64 decode
+                const decoded = atob(encrypted);
+                const ratings = {};
+                
+                // Parse the decoded data (simplified format)
+                const pairs = decoded.split('|');
+                pairs.forEach(pair => {
+                    if (!pair) return;
+                    const [id, data] = pair.split(':');
+                    if (id && data) {
+                        const attrs = data.split(',');
+                        if (attrs.length === 7) {
+                            ratings[id] = {
+                                pace: parseInt(attrs[0]),
+                                shooting: parseInt(attrs[1]),
+                                dribbling: parseInt(attrs[2]),
+                                passing: parseInt(attrs[3]),
+                                defending: parseInt(attrs[4]),
+                                physical: parseInt(attrs[5]),
+                                goalkeeping: parseInt(attrs[6])
+                            };
+                        }
+                    }
+                });
+                return ratings;
+            } catch (e) {
+                console.error('Failed to load player data');
+                return {};
+            }
+        }
+
+        // Decrypt ratings on load
+        const PLAYER_RATINGS = decryptRatings(ENCRYPTED_RATINGS);
+
+        // Position weightings for rating calculation
+        const WEIGHTINGS = {
+            GK: { goalkeeping: 0.95, passing: 0.05 },
+            DEF: { defending: 0.60, physical: 0.30, pace: 0.05, passing: 0.05 },
+            MID: { passing: 0.30, dribbling: 0.25, pace: 0.25, defending: 0.10, shooting: 0.10 },
+            ATT: { shooting: 0.35, pace: 0.30, dribbling: 0.25, passing: 0.10 }
+        };
+
+        // Load players from JSON file
+        async function loadPlayers() {
+            try {
+                const response = await fetch('players-public.json');
+                const data = await response.json();
+                
+                // Merge ratings into player data
+                allPlayers = data.players.map(player => ({
+                    ...player,
+                    attributes: PLAYER_RATINGS[player.id.toString()] || {}
+                }));
+                
+                renderPlayers();
+            } catch (error) {
+                showError('Failed to load players-public.json. Make sure the file is in the same folder as this HTML file.');
+            }
+        }
+
+        function calculatePlayerRating(player) {
+            // Find the best position for this player
+            let bestRating = 0;
+            let bestPosition = player.positions[0];
+
+            for (const position of player.positions) {
+                const weights = WEIGHTINGS[position];
+                let rating = 0;
+                
+                for (const [attr, weight] of Object.entries(weights)) {
+                    rating += player.attributes[attr] * weight;
+                }
+                
+                if (rating > bestRating) {
+                    bestRating = rating;
+                    bestPosition = position;
+                }
+            }
+
+            return {
+                rating: Math.round(bestRating),
+                position: bestPosition
+            };
+        }
+
+        function renderPlayers() {
+            const grid = document.getElementById('playerGrid');
+            grid.innerHTML = '';
+
+            allPlayers.forEach(player => {
+                const card = document.createElement('div');
+                card.className = 'player-card';
+                if (selectedPlayers.has(player.id)) {
+                    card.classList.add('selected');
+                }
+
+                card.innerHTML = `
+                    <input type="checkbox" 
+                           ${selectedPlayers.has(player.id) ? 'checked' : ''} 
+                           onchange="togglePlayer(${player.id})">
+                    <div class="player-name">
+                        ${player.name}
+                    </div>
+                    <div class="player-positions">
+                        ${player.positions.map(pos => 
+                            `<span class="position-badge">${pos}</span>`
+                        ).join('')}
+                    </div>
+                `;
+
+                card.onclick = (e) => {
+                    if (e.target.type !== 'checkbox') {
+                        togglePlayer(player.id);
+                        renderPlayers();
+                    }
+                };
+
+                grid.appendChild(card);
+            });
+
+            updateSelectedCount();
+        }
+
+        function togglePlayer(playerId) {
+            if (selectedPlayers.has(playerId)) {
+                selectedPlayers.delete(playerId);
+            } else {
+                if (selectedPlayers.size >= maxPlayers) {
+                    showError(`Maximum ${maxPlayers} players allowed for this format`);
+                    return;
+                }
+                selectedPlayers.add(playerId);
+            }
+            updateSelectedCount();
+        }
+
+        function updateSelectedCount() {
+            document.getElementById('selectedCount').textContent = selectedPlayers.size;
+            document.getElementById('maxPlayers').textContent = maxPlayers;
+        }
+
+        function updateMaxPlayers() {
+            const format = parseInt(document.getElementById('gameFormat').value);
+            maxPlayers = format;
+            
+            // If current selection exceeds new max, trim it
+            if (selectedPlayers.size > maxPlayers) {
+                const playersArray = Array.from(selectedPlayers);
+                selectedPlayers = new Set(playersArray.slice(0, maxPlayers));
+                renderPlayers();
+            }
+            
+            updateSelectedCount();
+        }
+
+        function selectAll() {
+            const availablePlayers = allPlayers.map(p => p.id);
+            selectedPlayers = new Set(availablePlayers.slice(0, maxPlayers));
+            renderPlayers();
+        }
+
+        function clearSelection() {
+            selectedPlayers.clear();
+            renderPlayers();
+        }
+
+        function showError(message) {
+            const errorDiv = document.getElementById('errorMessage');
+            errorDiv.textContent = message;
+            errorDiv.style.display = 'block';
+            setTimeout(() => {
+                errorDiv.style.display = 'none';
+            }, 5000);
+        }
+
+        function generateTeams() {
+            const selected = allPlayers.filter(p => selectedPlayers.has(p.id));
+            
+            if (selected.length !== maxPlayers) {
+                showError(`Please select exactly ${maxPlayers} players for ${maxPlayers/2}-a-side`);
+                return;
+            }
+
+            // Calculate ratings for all selected players
+            const playersWithRatings = selected.map(player => ({
+                ...player,
+                ...calculatePlayerRating(player)
+            }));
+
+            // Separate GKs from outfield players
+            const goalkeepers = playersWithRatings.filter(p => p.position === 'GK');
+            const outfield = playersWithRatings.filter(p => p.position !== 'GK');
+
+            // Sort outfield players by rating
+            outfield.sort((a, b) => b.rating - a.rating);
+
+            // Initialize teams
+            let team1 = [];
+            let team2 = [];
+
+            // Distribute goalkeepers
+            if (goalkeepers.length >= 2) {
+                // Both teams get a GK - balance them
+                goalkeepers.sort((a, b) => b.rating - a.rating);
+                team1.push(goalkeepers[0]);
+                team2.push(goalkeepers[1]);
+                // Add remaining GKs as outfield
+                for (let i = 2; i < goalkeepers.length; i++) {
+                    outfield.push(goalkeepers[i]);
+                    outfield.sort((a, b) => b.rating - a.rating);
+                }
+            } else if (goalkeepers.length === 1) {
+                // Only one GK - give to team1
+                team1.push(goalkeepers[0]);
+            }
+
+            // Calculate how many players each team should have
+            const playersPerTeam = maxPlayers / 2;
+
+            // Snake draft for outfield players
+            let team1Rating = team1.reduce((sum, p) => sum + p.rating, 0);
+            let team2Rating = team2.reduce((sum, p) => sum + p.rating, 0);
+
+            for (const player of outfield) {
+                // If a team is full, add to the other team
+                if (team1.length >= playersPerTeam) {
+                    team2.push(player);
+                    team2Rating += player.rating;
+                } else if (team2.length >= playersPerTeam) {
+                    team1.push(player);
+                    team1Rating += player.rating;
+                } else {
+                    // Both teams have space, use rating-based allocation
+                    if (team1Rating <= team2Rating) {
+                        team1.push(player);
+                        team1Rating += player.rating;
+                    } else {
+                        team2.push(player);
+                        team2Rating += player.rating;
+                    }
+                }
+            }
+
+            // Balance formations - ensure minimum 2 players per outfield position
+            team1 = balanceFormation(team1);
+            team2 = balanceFormation(team2);
+
+            renderTeams(team1, team2);
+        }
+
+        function balanceFormation(team) {
+            const hasGK = team.some(p => p.position === 'GK');
+            let outfield = team.filter(p => p.position !== 'GK');
+            
+            // Count positions
+            let positionCounts = {
+                DEF: outfield.filter(p => p.position === 'DEF').length,
+                MID: outfield.filter(p => p.position === 'MID').length,
+                ATT: outfield.filter(p => p.position === 'ATT').length
+            };
+
+            // Keep trying to balance until all positions have at least 2 or we can't improve
+            let improved = true;
+            let iterations = 0;
+            const maxIterations = 10;
+
+            while (improved && iterations < maxIterations) {
+                improved = false;
+                iterations++;
+
+                // Find positions that need players
+                const needsPlayers = Object.entries(positionCounts)
+                    .filter(([pos, count]) => count < 2)
+                    .sort((a, b) => a[1] - b[1]) // Sort by count (lowest first)
+                    .map(([pos]) => pos);
+
+                if (needsPlayers.length === 0) break;
+
+                // Find positions with excess players
+                const hasExcess = Object.entries(positionCounts)
+                    .filter(([pos, count]) => count > 2)
+                    .sort((a, b) => b[1] - a[1]) // Sort by count (highest first)
+                    .map(([pos]) => pos);
+
+                // Try to move players from excess positions to needed positions
+                for (let needPos of needsPlayers) {
+                    for (let excessPos of hasExcess) {
+                        // Find a player who can move from excess to needed position
+                        const playerToMove = outfield.find(p => 
+                            p.position === excessPos && 
+                            p.positions.includes(needPos)
+                        );
+
+                        if (playerToMove) {
+                            const oldPos = playerToMove.position;
+                            playerToMove.position = needPos;
+                            positionCounts[oldPos]--;
+                            positionCounts[needPos]++;
+                            improved = true;
+                            break;
+                        }
+                    }
+                    if (improved) break;
+                }
+
+                // If we still can't balance, try moving from any position with 2+ players
+                if (!improved) {
+                    for (let needPos of needsPlayers) {
+                        const sourcePositions = Object.entries(positionCounts)
+                            .filter(([pos, count]) => count >= 2 && pos !== needPos)
+                            .map(([pos]) => pos);
+
+                        for (let sourcePos of sourcePositions) {
+                            const playerToMove = outfield.find(p => 
+                                p.position === sourcePos && 
+                                p.positions.includes(needPos)
+                            );
+
+                            if (playerToMove) {
+                                const oldPos = playerToMove.position;
+                                playerToMove.position = needPos;
+                                positionCounts[oldPos]--;
+                                positionCounts[needPos]++;
+                                improved = true;
+                                break;
+                            }
+                        }
+                        if (improved) break;
+                    }
+                }
+            }
+
+            return team;
+        }
+
+        function renderTeams(team1, team2) {
+            const container = document.getElementById('pitchContainer');
+            container.innerHTML = '';
+
+            // If a team doesn't have a GK, assign lowest rated player to goal
+            const team1HasGK = team1.some(p => p.position === 'GK');
+            const team2HasGK = team2.some(p => p.position === 'GK');
+
+            if (!team1HasGK) {
+                team1 = assignGK(team1);
+            }
+            if (!team2HasGK) {
+                team2 = assignGK(team2);
+            }
+
+            const team1Avg = Math.round(team1.reduce((sum, p) => sum + p.rating, 0) / team1.length);
+            const team2Avg = Math.round(team2.reduce((sum, p) => sum + p.rating, 0) / team2.length);
+
+            // Render Team 1 (Black)
+            container.appendChild(createTeamPitch(team1, 'Black Shirts', team1Avg, false));
+            
+            // Render Team 2 (Yellow bibs)
+            container.appendChild(createTeamPitch(team2, 'Yellow Bibs', team2Avg, true));
+
+            document.getElementById('teamsSection').classList.remove('hidden');
+            document.getElementById('teamsSection').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function assignGK(team) {
+            // Find outfield players and assign lowest rated to GK
+            const outfield = team.filter(p => p.position !== 'GK');
+            if (outfield.length === 0) return team;
+
+            // Sort by rating and pick lowest
+            outfield.sort((a, b) => a.rating - b.rating);
+            const newGK = outfield[0];
+            
+            // Create a new player object with GK position
+            const assignedGK = {
+                ...newGK,
+                position: 'GK',
+                isAssignedGK: true // Flag to show this wasn't their natural position
+            };
+
+            // Replace in team
+            return team.map(p => p.id === newGK.id ? assignedGK : p);
+        }
+
+        function createTeamPitch(team, teamName, avgRating, isYellow) {
+            const section = document.createElement('div');
+            section.className = 'team-section';
+
+            // Organize players by position
+            const gk = team.filter(p => p.position === 'GK');
+            const defenders = team.filter(p => p.position === 'DEF');
+            const midfielders = team.filter(p => p.position === 'MID');
+            const attackers = team.filter(p => p.position === 'ATT');
+
+            const hasNaturalGK = gk.length > 0 && !gk[0].isAssignedGK;
+            const gkText = hasNaturalGK ? 'GK: ✓' : (gk.length > 0 ? 'GK: Assigned' : 'GK: None');
+
+            section.innerHTML = `
+                <div class="team-header">
+                    <div class="team-name">${teamName}</div>
+                    <div class="team-stats">
+                        ${team.length} Players | ${gkText}
+                    </div>
+                </div>
+                <div class="pitch">
+                    <div class="penalty-box top"></div>
+                    <div class="goal-box top"></div>
+                    <div class="penalty-box bottom"></div>
+                    <div class="goal-box bottom"></div>
+                    <div class="players-on-pitch ${isYellow ? 'team-yellow' : ''}" id="pitch-${isYellow ? 'yellow' : 'black'}">
+                    </div>
+                </div>
+            `;
+
+            const pitchEl = section.querySelector('.players-on-pitch');
+
+            // Position players on pitch
+            let yPosition = 5; // Start from top
+
+            // Goalkeeper
+            if (gk.length > 0) {
+                createPitchPlayer(pitchEl, gk[0], yPosition);
+                yPosition += 18;
+            }
+
+            // Defenders
+            if (defenders.length > 0) {
+                defenders.forEach((player, idx) => {
+                    const xOffset = getXOffset(idx, defenders.length);
+                    createPitchPlayer(pitchEl, player, yPosition, xOffset);
+                });
+                yPosition += 22;
+            }
+
+            // Midfielders
+            if (midfielders.length > 0) {
+                midfielders.forEach((player, idx) => {
+                    const xOffset = getXOffset(idx, midfielders.length);
+                    createPitchPlayer(pitchEl, player, yPosition, xOffset);
+                });
+                yPosition += 22;
+            }
+
+            // Attackers
+            if (attackers.length > 0) {
+                attackers.forEach((player, idx) => {
+                    const xOffset = getXOffset(idx, attackers.length);
+                    createPitchPlayer(pitchEl, player, yPosition, xOffset);
+                });
+            }
+
+            return section;
+        }
+
+        function createPitchPlayer(container, player, yPos, xOffset = 0) {
+            const playerDiv = document.createElement('div');
+            playerDiv.className = 'pitch-player';
+            playerDiv.style.top = yPos + '%';
+            playerDiv.style.left = (50 + xOffset) + '%';
+            
+            const initials = player.name.split(' ').map(n => n[0]).join('').substring(0, 2);
+            
+            playerDiv.innerHTML = `
+                <div class="player-circle">
+                    <div>${initials}</div>
+                </div>
+                <div class="player-label">${player.name.split(' ')[0]}</div>
+            `;
+            
+            container.appendChild(playerDiv);
+        }
+
+        function getXOffset(index, total) {
+            if (total === 1) return 0;
+            if (total === 2) return index === 0 ? -20 : 20;
+            if (total === 3) return (index - 1) * 20;
+            if (total === 4) return (index - 1.5) * 15;
+            return (index - (total - 1) / 2) * 12;
+        }
+
+        // Initialize
+        loadPlayers();
+    </script>
+</body>
+</html>

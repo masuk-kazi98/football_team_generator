@@ -1,0 +1,134 @@
+{
+  "players": [
+    {
+      "id": 1,
+      "name": "Masuk Kazi",
+      "positions": ["ATT", "MID", "DEF"]
+    },
+    {
+      "id": 2,
+      "name": "Fuzayl Fudge",
+      "positions": ["DEF", "ATT"]
+    },
+    {
+      "id": 3,
+      "name": "MK",
+      "positions": ["DEF", "ATT"]
+    },
+    {
+      "id": 4,
+      "name": "Zaid Ahmed",
+      "positions": ["ATT"]
+    },
+    {
+      "id": 5,
+      "name": "Asif",
+      "positions": ["DEF"]
+    },
+    {
+      "id": 6,
+      "name": "Ripon",
+      "positions": ["MID"]
+    },
+    {
+      "id": 7,
+      "name": "Awais",
+      "positions": ["ATT"]
+    },
+    {
+      "id": 8,
+      "name": "Soufiane",
+      "positions": ["MID", "ATT"]
+    },
+    {
+      "id": 9,
+      "name": "Salah",
+      "positions": ["ATT"]
+    },
+    {
+      "id": 10,
+      "name": "Rana",
+      "positions": ["MID", "DEF"]
+    },
+    {
+      "id": 11,
+      "name": "Amer",
+      "positions": ["DEF"]
+    },
+    {
+      "id": 12,
+      "name": "Abz",
+      "positions": ["DEF"]
+    },
+    {
+      "id": 13,
+      "name": "Nad",
+      "positions": ["GK"]
+    },
+    {
+      "id": 14,
+      "name": "Ibrahim",
+      "positions": ["DEF", "MID"]
+    },
+    {
+      "id": 15,
+      "name": "Jamil",
+      "positions": ["ATT"]
+    },
+    {
+      "id": 16,
+      "name": "Mo",
+      "positions": ["DEF", "MID"]
+    },
+    {
+      "id": 17,
+      "name": "Eby",
+      "positions": ["ATT"]
+    },
+        {
+      "id": 18,
+      "name": "Esa",
+      "positions": ["ATT"]
+    },
+    {
+      "id": 19,
+      "name": "Brayden",
+      "positions": ["ATT"]
+    },
+    {
+      "id": 20,
+      "name": "Raza",
+      "positions": ["DEF", "MID"]
+    },
+    {
+      "id": 21,
+      "name": "Daniel",
+      "positions": ["DEF", "MID", "ATT"]
+    },
+    {
+      "id": 22,
+      "name": "Zuhayr",
+      "positions": ["MID"]
+    },
+    {
+      "id": 23,
+      "name": "Danyal",
+      "positions": ["ATT", "MID"]
+    },
+    {
+      "id": 24,
+      "name": "Bilal",
+      "positions": ["ATT"]
+    },
+    {
+      "id": 25,
+      "name": "Aatif",
+      "positions": ["DEF"]
+    },
+    {
+      "id": 26,
+      "name": "Shapol",
+      "positions": ["MID"]
+    }
+  ]
+}
