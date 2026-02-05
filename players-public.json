@@ -129,6 +129,11 @@
       "id": 26,
       "name": "Shapol",
       "positions": ["MID"]
-    }
+    },
+    {
+      "id": 27,
+      "name": "Zaid M",
+      "positions": ["ATT", "MID"]
+     }
   ]
 }
