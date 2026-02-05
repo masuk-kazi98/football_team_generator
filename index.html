@@ -1067,6 +1067,9 @@
             const team1Avg = Math.round(team1.reduce((sum, p) => sum + p.rating, 0) / team1.length);
             const team2Avg = Math.round(team2.reduce((sum, p) => sum + p.rating, 0) / team2.length);
 
+            console.log('Team 1 Average Rating:', team1Avg);
+            console.log('Team 2 Average Rating:', team2Avg);
+
             // Render Team 1 (Black)
             container.appendChild(createTeamPitch(team1, 'Non Bibs', team1Avg, false));
             
