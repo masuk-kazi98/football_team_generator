@@ -676,7 +676,8 @@
         let maxPlayers = 18;
 
         // Encrypted player ratings (obfuscated for privacy)
-        const ENCRYPTED_RATINGS = "MTo5Miw4NSw5MCw5NSw4NSw4NSwzMHwyOjg3LDgwLDgwLDcwLDcwLDYwLDM1fDM6ODQsNjAsNzAsNzAsNjAsNjAsMjV8NDo3MCw4Nyw4MCw4MCw1MCw4NSw1MHw1OjcwLDY1LDYwLDgwLDk1LDkwLDYwfDY6NjUsNjUsNjAsNzAsMzAsNzUsNDB8Nzo3MCw5MCw4Miw4MCw0MCw4NSwyOHw4Ojk2LDkwLDkwLDg1LDcwLDYwLDM4fDk6ODMsODIsODAsNjgsNTAsODMsMjV8MTA6ODIsODQsODUsOTIsNzUsNzUsMzB8MTE6NDAsNDAsNDAsNTAsNzAsODUsMzV8MTI6NzUsNjUsNzAsNjUsODQsODcsMjJ8MTM6MzAsMzAsMzAsNzUsMzAsMzAsNzV8MTQ6NTAsNTAsNjAsNjAsNjAsODcsNTB8MTU6NTIsNTUsNjUsNTAsMzAsODcsMjh8MTY6NzAsNjUsNzAsNzUsODAsODIsMTh8MTc6ODgsODQsODcsODIsNDAsNjAsMTh8MTg6ODIsODAsODIsNzUsMzAsMzAsMTh8MTk6ODAsNzUsODIsNzUsNjAsNzUsMTh8MjA6NzIsNjAsNjgsNzIsNjUsNjUsMTh8MjE6ODIsODYsODUsODQsODUsODQsMTh8MjI6NzUsNzAsNzUsNjAsNzAsODQsMTh8MjM6ODAsNjgsODAsNjAsNDAsNTAsMTh8MjQ6ODQsNzUsODIsNjAsNjAsNzcsMTh8MjU6NTUsNTUsNjAsNjUsODIsODIsMTh8MjY6ODksODcsOTQsOTAsNzUsNzUsMTh8Mjc6ODMsNzksODIsNzUsNTUsNjAsMTg=";
+        const ENCRYPTED_RATINGS = "MTo4NSw3OCw4Miw3MCw0NSw2NSwzMHwyOjYyLDQ4LDU1LDcyLDg4LDg1LDM1fDM6NzUsNjgsNzYsODIsNjIsNzAsMjV8NDo1NSw0MCw0NSw2MCw1MCw3NSw4NXw1OjkwLDgwLDg1LDY1LDM4LDYwLDIwfDY6NzAsNTUsNjAsNzUsODAsNzgsNDB8Nzo3OCw3NSw4MCw3OCw1MCw2OCwyOHw4OjY4LDQ1LDUwLDY4LDg1LDgyLDM4fDk6ODIsODUsNzgsNjgsNDIsNjUsMjV8MTA6NzIsNjUsNzAsODAsNjgsNzIsMzB8MTE6NjUsNTIsNTgsNzAsODIsODAsMzV8MTI6ODAsNzIsNzUsNzIsNDgsNjIsMjJ8MTM6NjAsNDIsNDgsNjUsODgsODUsNDJ8MTQ6NTgsMzgsNDIsNjIsNjUsNzgsODJ8MTU6NzQsNzAsNzIsNzgsNjAsNzAsMjh8MTY6ODgsODIsODAsNjIsNDAsNTgsMTg=";
+
         // Simple decryption function
         function decryptRatings(encrypted) {
             try {
@@ -925,11 +926,19 @@
             const playersPerTeam = maxPlayers / 2;
 
             // Snake draft for outfield players
-            let team1Rating = team1.reduce((sum, p) => sum + p.rating, 0);
-            let team2Rating = team2.reduce((sum, p) => sum + p.rating, 0);
+            let team1Rating = team1.reduce((sum, p) => {
+                // Don't count natural GK ratings in team balance (they have minimal impact on game)
+                if (p.position === 'GK' && p.positions.includes('GK')) return sum;
+                return sum + p.rating;
+            }, 0);
+            let team2Rating = team2.reduce((sum, p) => {
+                // Don't count natural GK ratings in team balance
+                if (p.position === 'GK' && p.positions.includes('GK')) return sum;
+                return sum + p.rating;
+            }, 0);
 
             for (const player of shuffledOutfield) {
-                // If a team is full, add to the other team
+                // IMPORTANT: First check if teams are full (equal player count is priority)
                 if (team1.length >= playersPerTeam) {
                     team2.push(player);
                     team2Rating += player.rating;
@@ -937,7 +946,7 @@
                     team1.push(player);
                     team1Rating += player.rating;
                 } else {
-                    // Both teams have space, use rating-based allocation
+                    // Both teams have space, use rating-based allocation for balance
                     if (team1Rating <= team2Rating) {
                         team1.push(player);
                         team1Rating += player.rating;
@@ -947,6 +956,47 @@
                     }
                 }
             }
+
+            // Pre-balance: Before calling balanceFormation, do a quick check
+            // to see if we need to force some position changes
+            const forceInitialBalance = (team) => {
+                let outfield = team.filter(p => p.position !== 'GK');
+                let defCount = outfield.filter(p => p.position === 'DEF').length;
+                let midCount = outfield.filter(p => p.position === 'MID').length;
+                
+                console.log(`Pre-balance check for team: DEF=${defCount}, MID=${midCount}`);
+                
+                // If we have 0 or 1 DEF, force conversion immediately
+                while (defCount < 2) {
+                    const candidate = outfield.find(p => 
+                        p.position !== 'DEF' && 
+                        p.positions.includes('DEF')
+                    );
+                    if (!candidate) break;
+                    console.log(`PRE-BALANCE: Converting ${candidate.name} to DEF`);
+                    candidate.position = 'DEF';
+                    defCount++;
+                }
+                
+                // If we have 0 or 1 MID, force conversion immediately
+                while (midCount < 2) {
+                    const candidate = outfield.find(p => 
+                        p.position !== 'MID' && 
+                        p.positions.includes('MID') &&
+                        (p.position !== 'DEF' || defCount > 2)  // Don't take from DEF if we only have 2
+                    );
+                    if (!candidate) break;
+                    console.log(`PRE-BALANCE: Converting ${candidate.name} to MID`);
+                    candidate.position = 'MID';
+                    midCount++;
+                }
+                
+                return team;
+            };
+
+            // Apply pre-balancing to both teams
+            team1 = forceInitialBalance(team1);
+            team2 = forceInitialBalance(team2);
 
             // Balance formations - ensure minimum 2 players per outfield position
             team1 = balanceFormation(team1);
@@ -959,91 +1009,112 @@
             const hasGK = team.some(p => p.position === 'GK');
             let outfield = team.filter(p => p.position !== 'GK');
             
-            // Count positions
-            let positionCounts = {
-                DEF: outfield.filter(p => p.position === 'DEF').length,
-                MID: outfield.filter(p => p.position === 'MID').length,
-                ATT: outfield.filter(p => p.position === 'ATT').length
-            };
-
-            // Keep trying to balance until all positions have at least 1 player
-            let improved = true;
-            let iterations = 0;
-            const maxIterations = 20;
-
-            while (improved && iterations < maxIterations) {
-                improved = false;
-                iterations++;
-
-                // Find positions with 0 players (CRITICAL)
-                const emptyPositions = Object.entries(positionCounts)
-                    .filter(([pos, count]) => count === 0)
-                    .map(([pos]) => pos);
-
-                // Find positions with < 2 players (IDEAL)
-                const needsPlayers = Object.entries(positionCounts)
-                    .filter(([pos, count]) => count < 2)
-                    .sort((a, b) => a[1] - b[1])
-                    .map(([pos]) => pos);
-
-                // Prioritize filling empty positions first
-                const targetPositions = emptyPositions.length > 0 ? emptyPositions : needsPlayers;
+            // MANDATORY: Must have at least 2 DEF and 2 MID
+            const REQUIRED_DEF = 2;
+            const REQUIRED_MID = 2;
+            
+            console.log('=== BALANCE FORMATION START ===');
+            
+            // Keep looping until requirements are met
+            let attempts = 0;
+            const maxAttempts = 100;
+            
+            while (attempts < maxAttempts) {
+                attempts++;
                 
-                if (targetPositions.length === 0) break;
-
-                // Find positions with excess players
-                const minRequired = emptyPositions.length > 0 ? 1 : 2;
-                const hasExcess = Object.entries(positionCounts)
-                    .filter(([pos, count]) => count > minRequired)
-                    .sort((a, b) => b[1] - a[1])
-                    .map(([pos]) => pos);
-
-                // Try to move players from excess positions to needed positions
-                for (let needPos of targetPositions) {
-                    for (let excessPos of hasExcess) {
-                        const playerToMove = outfield.find(p => 
-                            p.position === excessPos && 
-                            p.positions.includes(needPos)
-                        );
-
-                        if (playerToMove) {
-                            const oldPos = playerToMove.position;
-                            playerToMove.position = needPos;
-                            positionCounts[oldPos]--;
-                            positionCounts[needPos]++;
-                            improved = true;
-                            break;
-                        }
-                    }
-                    if (improved) break;
+                const defCount = outfield.filter(p => p.position === 'DEF').length;
+                const midCount = outfield.filter(p => p.position === 'MID').length;
+                const attCount = outfield.filter(p => p.position === 'ATT').length;
+                
+                console.log(`Attempt ${attempts}: DEF=${defCount}, MID=${midCount}, ATT=${attCount}`);
+                
+                // Check if requirements are met
+                if (defCount >= REQUIRED_DEF && midCount >= REQUIRED_MID) {
+                    console.log('✓ Requirements met!');
+                    break;
                 }
-
-                // If still can't fill, try ANY reassignment that helps
-                if (!improved && emptyPositions.length > 0) {
-                    for (let needPos of emptyPositions) {
-                        const anySourcePos = Object.entries(positionCounts)
-                            .filter(([pos, count]) => count >= 1 && pos !== needPos)
-                            .sort((a, b) => b[1] - a[1])
-                            .map(([pos]) => pos);
-
-                        for (let sourcePos of anySourcePos) {
-                            const playerToMove = outfield.find(p => 
-                                p.position === sourcePos && 
-                                p.positions.includes(needPos)
-                            );
-
-                            if (playerToMove) {
-                                const oldPos = playerToMove.position;
-                                playerToMove.position = needPos;
-                                positionCounts[oldPos]--;
-                                positionCounts[needPos]++;
-                                improved = true;
-                                break;
-                            }
-                        }
-                        if (improved) break;
+                
+                // Fix DEF shortage
+                if (defCount < REQUIRED_DEF) {
+                    const needed = REQUIRED_DEF - defCount;
+                    console.log(`Need ${needed} more DEF`);
+                    
+                    // Find all players who can play DEF but aren't
+                    const candidates = outfield.filter(p => 
+                        p.position !== 'DEF' && 
+                        p.positions.includes('DEF')
+                    );
+                    
+                    if (candidates.length === 0) {
+                        console.error('⚠️ NO PLAYERS CAN PLAY DEF!');
+                        break;
                     }
+                    
+                    // Prioritize taking from ATT, then MID
+                    candidates.sort((a, b) => {
+                        if (a.position === 'ATT' && b.position !== 'ATT') return -1;
+                        if (b.position === 'ATT' && a.position !== 'ATT') return 1;
+                        return 0;
+                    });
+                    
+                    // Move the first candidate
+                    const toMove = candidates[0];
+                    console.log(`Moving ${toMove.name} from ${toMove.position} to DEF`);
+                    toMove.position = 'DEF';
+                    continue;
                 }
+                
+                // Fix MID shortage
+                if (midCount < REQUIRED_MID) {
+                    const needed = REQUIRED_MID - midCount;
+                    console.log(`Need ${needed} more MID`);
+                    
+                    // Find all players who can play MID but aren't
+                    const candidates = outfield.filter(p => 
+                        p.position !== 'MID' && 
+                        p.positions.includes('MID')
+                    );
+                    
+                    if (candidates.length === 0) {
+                        console.error('⚠️ NO PLAYERS CAN PLAY MID!');
+                        break;
+                    }
+                    
+                    // Prioritize taking from ATT, then from DEF only if we have more than 2 DEF
+                    const currentDefCount = outfield.filter(p => p.position === 'DEF').length;
+                    candidates.sort((a, b) => {
+                        // Prefer ATT
+                        if (a.position === 'ATT' && b.position !== 'ATT') return -1;
+                        if (b.position === 'ATT' && a.position !== 'ATT') return 1;
+                        
+                        // Only take from DEF if we have more than required
+                        if (a.position === 'DEF' && currentDefCount <= REQUIRED_DEF) return 1;
+                        if (b.position === 'DEF' && currentDefCount <= REQUIRED_DEF) return -1;
+                        
+                        return 0;
+                    });
+                    
+                    // Move the first candidate
+                    const toMove = candidates[0];
+                    console.log(`Moving ${toMove.name} from ${toMove.position} to MID`);
+                    toMove.position = 'MID';
+                    continue;
+                }
+            }
+            
+            // Final check
+            const finalDefCount = outfield.filter(p => p.position === 'DEF').length;
+            const finalMidCount = outfield.filter(p => p.position === 'MID').length;
+            const finalAttCount = outfield.filter(p => p.position === 'ATT').length;
+            
+            console.log('=== FINAL FORMATION ===');
+            console.log(`Formation: ${finalDefCount}-${finalMidCount}-${finalAttCount}`);
+            
+            if (finalDefCount < REQUIRED_DEF) {
+                console.error(`❌ FAILED: DEF only has ${finalDefCount} players (need ${REQUIRED_DEF})`);
+            }
+            if (finalMidCount < REQUIRED_MID) {
+                console.error(`❌ FAILED: MID only has ${finalMidCount} players (need ${REQUIRED_MID})`);
             }
 
             return team;
@@ -1067,14 +1138,14 @@
             const team1Avg = Math.round(team1.reduce((sum, p) => sum + p.rating, 0) / team1.length);
             const team2Avg = Math.round(team2.reduce((sum, p) => sum + p.rating, 0) / team2.length);
 
-            console.log('Team 1 Average Rating:', team1Avg);
-            console.log('Team 2 Average Rating:', team2Avg);
+            console.log(`Team 1 Average Rating: ${team1Avg}`);
+            console.log(`Team 2 Average Rating: ${team2Avg}`);
 
             // Render Team 1 (Black)
-            container.appendChild(createTeamPitch(team1, 'Non Bibs', team1Avg, false));
+            container.appendChild(createTeamPitch(team1, 'Black Shirts', team1Avg, false));
             
             // Render Team 2 (Yellow bibs)
-            container.appendChild(createTeamPitch(team2, 'Bibs', team2Avg, true));
+            container.appendChild(createTeamPitch(team2, 'Yellow Bibs', team2Avg, true));
 
             document.getElementById('teamsSection').classList.remove('hidden');
             document.getElementById('teamsSection').scrollIntoView({ behavior: 'smooth' });
@@ -1117,7 +1188,7 @@
                 <div class="team-header">
                     <div class="team-name">${teamName}</div>
                     <div class="team-stats">
-                        ${team.length} Players | ${gkText}
+                        ${team.length} Players | ${gkText} | Formation: ${defenders.length}-${midfielders.length}-${attackers.length}
                     </div>
                 </div>
                 <div class="pitch">
@@ -1135,34 +1206,34 @@
             
             const pitchEl = section.querySelector('.players-on-pitch');
 
-            // Position players on pitch
+            // Position players on pitch with consistent spacing
             let yPosition = 5; // Start from top
 
-            // Goalkeeper
+            // Goalkeeper - always render this line
             if (gk.length > 0) {
                 createPitchPlayer(pitchEl, gk[0], yPosition);
-                yPosition += 18;
             }
+            yPosition += 18;
 
-            // Defenders
+            // Defenders - always add spacing for this line
             if (defenders.length > 0) {
                 defenders.forEach((player, idx) => {
                     const xOffset = getXOffset(idx, defenders.length);
                     createPitchPlayer(pitchEl, player, yPosition, xOffset);
                 });
-                yPosition += 22;
             }
+            yPosition += 22;
 
-            // Midfielders
+            // Midfielders - always add spacing for this line
             if (midfielders.length > 0) {
                 midfielders.forEach((player, idx) => {
                     const xOffset = getXOffset(idx, midfielders.length);
                     createPitchPlayer(pitchEl, player, yPosition, xOffset);
                 });
-                yPosition += 22;
             }
+            yPosition += 22;
 
-            // Attackers
+            // Attackers - always add spacing for this line
             if (attackers.length > 0) {
                 attackers.forEach((player, idx) => {
                     const xOffset = getXOffset(idx, attackers.length);
