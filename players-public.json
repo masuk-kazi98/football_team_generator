@@ -3,7 +3,7 @@
     {
       "id": 1,
       "name": "Masuk",
-      "positions": ["ATT", "MID", "DEF"]
+      "positions": ["ATT", "MID"]
     },
     {
       "id": 2,
