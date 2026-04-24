@@ -134,6 +134,16 @@
       "id": 27,
       "name": "Zaid M",
       "positions": ["ATT", "MID"]
-     }
+    },
+    {
+      "id": 28,
+      "name": "Hamzah Adam",
+      "positions": ["ATT"]
+    },
+    {
+      "id": 29,
+      "name": "Zeeshan",
+      "positions": ["GK"]
+    }
   ]
 }
